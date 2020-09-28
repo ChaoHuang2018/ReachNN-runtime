@@ -223,7 +223,7 @@ class NN(object):
             elif self.activation == 'sigmoid':
                 L *= 1/4
 
-        return (L - self.offset) * self.scale_factor
+        return L * self.scale_factor
 
     def tensorflow_representation(self, x, train=False, reuse=False):
         """
@@ -283,6 +283,10 @@ class NN(object):
             x *= self.scale_factor
 
             return x
+
+    def get_gradient(self, sess, x_in):
+        grads = tf.gradients(self.y[0], self.x)
+        return sess.run(grads, feed_dict={self.x: x_in})
 
     def __call__(self, sess, x_in):
         result = sess.run(self.y, feed_dict={self.x: x_in})

@@ -2,7 +2,7 @@ import error_analysis as ea
 import sympy as sp
 import ast
 from network_parser import nn_controller_details
-from nn_analysis import NNRange
+from nn_analysis import NNTaylor
 
 
 def poly_approx_controller(
@@ -12,14 +12,6 @@ def poly_approx_controller(
     activation,
     nerual_network
 ):
-    # local lips
-    nn = nn_controller_details(nerual_network, activation, reuse=True)
-    box = ast.literal_eval(box_str)
-    output_i = ast.literal_eval(output_index)
-    nn_range = NNRange(nn)
-    
-    return nn_range.get_output_center(box, output_i)
-
     # original reachnn
 
     # d = ast.literal_eval(d_str)
@@ -29,6 +21,17 @@ def poly_approx_controller(
     # x = sp.symbols('x:' + str(nn.num_of_inputs))
     # b, _, _ = ea.nn_poly_approx_bernstein(nn.controller, x, d, box, output_i)
     # return ea.p2c(b)
+
+    # online verification by Linear taylor
+    d = ast.literal_eval(d_str)
+    box = ast.literal_eval(box_str)
+    output_i = ast.literal_eval(output_index)
+    nn = nn_controller_details(nerual_network, activation, reuse=True)
+    nn_range = NNTaylor(nn)
+
+    x = sp.symbols('x:' + str(nn.num_of_inputs))
+    linear_taylor = nn_range.get_taylor_linear(x, box, output_i)
+    return str(linear_taylor)
 
 
 def poly_approx_error(
@@ -42,9 +45,9 @@ def poly_approx_error(
     nn = nn_controller_details(nerual_network, activation, reuse=True)
     box = ast.literal_eval(box_str)
     output_i = ast.literal_eval(output_index)
-    nn_range = NNRange(nn)
+    nn_range = NNTaylor(nn)
 
-    return nn_range.get_output_error(box, output_i)
+    return nn_range.get_taylor_remainder(box, output_i)
 
     # original reachnn
     # d = ast.literal_eval(d_str)

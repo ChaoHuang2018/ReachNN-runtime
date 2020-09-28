@@ -2,13 +2,22 @@ import error_analysis as ea
 import sympy as sp
 import ast
 from network_parser import nn_controller_details
-from nn_analysis import NNRange
+from nn_analysis import NNTaylor
+import time
+
 
 nn = nn_controller_details('nn_1_sigmoid', 'sigmoid', reuse=True)
-box = [[0.7,0.9],[0.7,0.9]]
+box = [[0.4,0.5],[0.4,0.5]]
 output_i = 0
-nn_range = NNRange(nn)
+nn_range = NNTaylor(nn)
 
-print('center: ' + str(nn_range.get_output_center(box, output_i)))
-print('local_lips: ' + str(nn_range.get_local_lips(box, output_i)))
-print('global_lips: ' + str(nn_range.get_global_lips()))
+x = sp.symbols('x:'+str(nn.num_of_inputs))
+
+time_start = time.time()
+print('Linear Taylor: ' + str(nn_range.get_taylor_linear(x, box, output_i)))
+time_expression = time.time() - time_start
+print('Time for generating linear taylor: ' + str(time_expression))
+time_start = time.time()
+print('Error: ' + str(nn_range.get_taylor_remainder(box, output_i)))
+time_error = time.time() - time_start
+print('Time for generating error: ' + str(time_error))
